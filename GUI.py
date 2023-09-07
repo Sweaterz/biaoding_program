@@ -37,7 +37,7 @@ class Ui_MainWindow(object):
 
         #使用帮助
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
-        self.label_4.setGeometry(QtCore.QRect(30, 290, 800, 500))
+        self.label_4.setGeometry(QtCore.QRect(35, 290, 800, 500))
         self.label_4.setText(
             "工作流程:\n"
             "选择文件—>确定品牌—>自动标定—>调整标定数据—>手动标定—>效果展示—>保存数据\n\n"
@@ -46,6 +46,12 @@ class Ui_MainWindow(object):
             "如果标定数据不理想，可以尝试同车道的其他的.dat文件再次自动标定。也可以进一步修改参数手动标定。\n"
             "当标定信息栏已经有参数时，若再次点击会覆盖先前标定数据。\n"
             "保存标定信息将存入./data/biaoding_file/中。\n")
+        # 切换扫描模式
+        self.switchUp2Down = QtWidgets.QRadioButton(self.centralwidget)
+        self.switchUp2Down.setGeometry(QtCore.QRect(620, 10, 150, 31))
+        self.switchUp2Down.setText("从上向下")
+        self.switchUp2Down.setCheckable(True)
+
         # 品牌
         self.brand_selection = QtWidgets.QComboBox(self.centralwidget)
         self.brand_selection.setGeometry(QtCore.QRect(670, 40, 50, 31))
@@ -110,31 +116,13 @@ class Ui_MainWindow(object):
         self.savePath_editline.setGeometry(QtCore.QRect(120, 395, 600, 31))
         self.savePath_editline.setPlaceholderText("保存路径自动生成：")
 
-        # 显示激光品牌
-        # self.brand_edit = QtWidgets.QLineEdit(self.centralwidget)
-        # self.brand_edit.setPlaceholderText("请您输入激光品牌：")
-        # self.brand_edit.setGeometry(QtCore.QRect(120, 450, 150, 31))
-
-
         #显示当前地址
         self.address= QtWidgets.QLabel(self.centralwidget)
         self.address.setText("当前文件夹路径:")
         self.address.setGeometry(QtCore.QRect(30, 3, 800, 19))
 
-        # 用来显示打开文件的信息
-        # self.msg = QtWidgets.QLabel(self.centralwidget)
-        # self.msg.resize(415, 15)
-        # # print(self.msg.frameSize())
-        # self.msg.setWordWrap(True)  # 自动换行
-        # # self.msg.setAlignment(QtCore.Qt.AlignTop)  # 靠上
-        # # 创建一个滚动对象
-        # scroll = QtWidgets.QScrollArea(self.centralwidget)
-        # scroll.setGeometry(30, 30, 420, 280)
-        # scroll.setWidget(self.msg)
-
         self.file_list = QtWidgets.QListWidget(self.centralwidget)
         self.file_list.setGeometry(30, 30, 420, 280)
-
 
         #显示标定信息
         self.biaoding_edit_word = QtWidgets.QLabel(self.centralwidget)
@@ -144,7 +132,7 @@ class Ui_MainWindow(object):
         self.biaoding_angle_edit = QtWidgets.QTextEdit(self.centralwidget)
         self.biaoding_angle_edit.setGeometry(QtCore.QRect(520, 35, 60, 31))
         self.biaoding_angle_edit.setPlaceholderText("Angle")
-        h_step = 50
+        h_step = 34
         self.biaoding_height_edit = QtWidgets.QTextEdit(self.centralwidget)
         self.biaoding_height_edit.setGeometry(QtCore.QRect(520, 35 + h_step, 60, 31))
         self.biaoding_height_edit.setPlaceholderText("Height")
@@ -164,11 +152,18 @@ class Ui_MainWindow(object):
         self.biaoding_min_h_edit = QtWidgets.QTextEdit(self.centralwidget)
         self.biaoding_min_h_edit.setGeometry(QtCore.QRect(520, 35 + 5 * h_step, 60, 31))
         self.biaoding_min_h_edit.setPlaceholderText("Min_h")
-
+        # 安全岛宽度
+        self.refuge_island_width = QtWidgets.QTextEdit(self.centralwidget)
+        self.refuge_island_width.setGeometry(QtCore.QRect(520, 35 + 6 * h_step, 60, 31))
+        self.refuge_island_width.setPlaceholderText("Isle_l")
+        # 安全岛高度
+        self.refuge_island_height = QtWidgets.QTextEdit(self.centralwidget)
+        self.refuge_island_height.setGeometry(QtCore.QRect(520, 35 + 7 * h_step, 60, 31))
+        self.refuge_island_height.setPlaceholderText("Isle_h")
 
         self.biaoding_label = QtWidgets.QLabel(self.centralwidget)
         self.biaoding_label.setGeometry(QtCore.QRect(460, 40, 60, 300))
-        self.biaoding_label.setText("Angle:\n\n\nHeight:\n\n\nMax_l:\n\n\nMin_l:\n\n\nMax_h:\n\n\nMin_h:")
+        self.biaoding_label.setText("Angle:\n\nHeight:\n\nMax_l:\n\nMin_l:\n\nMax_h:\n\nMin_h:\n\nIsle_l:\n\nIsle_h:")
         self.biaoding_label.setAlignment(QtCore.Qt.AlignTop)
 
 
@@ -178,7 +173,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "标定工具 v_1.02"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "标定工具 v_1.03"))
         self.pushButton.setText(_translate("MainWindow", "自动标定"))
 
         self.label.setText(_translate("MainWindow", "filePath:"))
