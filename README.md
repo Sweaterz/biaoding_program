@@ -22,7 +22,7 @@ Firstly you need to pip install vtk.
 Then pip install mayavi.
 pip install pyqt5  
 
-## Packing program
+## Packing Program
 just to use the pyinstaller
 You need to install first.
 pip install pyinstaller
