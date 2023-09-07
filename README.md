@@ -33,7 +33,7 @@ The packed program is located in dist directory. You could use it or distribute 
 
 ## Published Version
 ### Windows 64 bit:
-[version v1.04](https://qr.dingtalk.com/page/yunpan?route=previewDentry&spaceId=21351901098&fileId=115608940676&type=file)<br />  
+[version v1.04](https://pan.baidu.com/s/1HLnKvbfyMUEazOsZk6PLpA?pwd=1234)<br />  
 >
 >
 ## Thanks
