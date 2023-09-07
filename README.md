@@ -11,7 +11,7 @@ This repository contains the project used for vertical lidar calibration.  You c
 
  ui file can be opened by Qtdesigner , you can design the GUI easily by dragging the block. The packing file, here is the mywindow.spec, the file helps you find the import files libraries. The spec file which is used to pack the program into an executive file. Hook_file is the folder contains hook files which can help you find the data and include when you are packing.
 
-## Require:  
+## Require
 python 3.6  
 PyQt5
 vtk compatible version for python 3.6  
@@ -30,5 +30,14 @@ pip install pyinstaller
 And then you can using pyinstaller mywindow.spec in your command line to build a package.
 The packed program is located in dist directory. You could use it or distribute it conveniently.
 
-Edit by zhy, 2023.9.7.17:10 CST.
+
+## Published Version
+### Windows 64 bit:
+[version v1.04](https://qr.dingtalk.com/page/yunpan?route=previewDentry&spaceId=21351901098&fileId=115608940676&type=file)  <br \>
+
+## Thanks
+Thanks Sweaterz.
+
+
+First Edit by Sweaterz, 2023.9.7.17:10 CST.
 
