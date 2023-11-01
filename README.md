@@ -37,7 +37,7 @@ The packed program is located in dist directory. You could use it or distribute 
 >
 >
 ## Thanks
-Thanks Sweaterz.
+Thank to Sweaterz，for who is the largest contributor.
 
 
 First Edit by Sweaterz, 2023.9.7.17:10 CST.
