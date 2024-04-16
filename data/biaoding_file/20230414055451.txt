@@ -1,6 +1,0 @@
-Angle:85.24
-Height:2057
-Max_l:4240
-Min_l:1000
-Max_h:4000
-Min_h:0
