@@ -14,3 +14,4 @@ data = collect_data_files("apptools")
 hiddenimports = collect_submodules("apptools")
 print(data)
 print(hiddenimports)
+

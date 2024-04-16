@@ -51,8 +51,8 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def help_info(self):
         QtWidgets.QMessageBox.information(self, "关于",
-                                         "标定软件  v1.04\n"
-                                         "2023.9.5\n\n"
+                                          "标定软件  v1.05\n"
+                                          "2023.9.5\n\n"
                                           "中储恒科物联网有限公司")
 
     def quick_show(self):
@@ -166,82 +166,90 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             # self.savePath_editline.setText(self.savePath)
 
     def zidong_biaoding(self):
-        if self.filePath == "":
-            QtWidgets.QMessageBox.information(self, "提示框", "请先选择文件！")
+        try:
+            if self.filePath == "":
+                QtWidgets.QMessageBox.information(self, "提示框", "请先选择文件！")
+                return
+            self.up2down = self.switchUp2Down.isChecked()
+
+            self.filePath = self.filePath_editline.text()
+            self.savePath = self.filePath[:-4].replace("data_file", "bin_file") + ".bin"
+            self.savePath_editline.setText(self.savePath)
+            self.mayavi_widget1.clearAll()
+
+            if self.brand_selection.currentText() == "杜格":
+                temp = Biaoding(self.filePath, self.savePath, "dg")
+                flag = temp.readDatDG(up2down=self.up2down)
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+                # temp.biaoding_show()
+                temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+            elif self.brand_selection.currentText() == "傲视":
+                temp = Biaoding(self.filePath, self.savePath, "as")
+                flag = temp.justreadDatAS()
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+                # temp.biaoding_show()
+                temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+
+            else:
+                temp = Biaoding(self.filePath, self.savePath, "dg")
+                flag = temp.justreadDatAS()
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+                # temp.biaoding_show()
+                temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+
+            # QMessageBox.information(MainWindow, "提示框","标定成功")
+            self.biaoding_angle_edit.setText("{:.2f}".format(temp.iHorizontalAngle))
+            self.biaoding_height_edit.setText(str(temp.iHorizontalHeight))
+            self.biaoding_max_l_edit.setText(str(temp.max_l))
+            self.biaoding_min_l_edit.setText(str(temp.min_l))
+            self.biaoding_max_h_edit.setText(str(temp.max_h))
+            self.biaoding_min_h_edit.setText(str(temp.min_h))
+        except Exception as e:
+            QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
             return
-        self.up2down = self.switchUp2Down.isChecked()
-
-        self.filePath = self.filePath_editline.text()
-        self.savePath = self.filePath[:-4].replace("data_file", "bin_file") + ".bin"
-        self.savePath_editline.setText(self.savePath)
-        self.mayavi_widget1.clearAll()
-
-        if self.brand_selection.currentText() == "杜格":
-            temp = Biaoding(self.filePath, self.savePath, "dg")
-            flag = temp.readDatDG(up2down=self.up2down)
-            if not flag:
-                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
-                return
-            # temp.biaoding_show()
-            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
-        elif self.brand_selection.currentText() == "傲视":
-            temp = Biaoding(self.filePath, self.savePath, "as")
-            flag = temp.justreadDatAS()
-            if not flag:
-                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
-                return
-            # temp.biaoding_show()
-            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
-
-        else:
-            temp = Biaoding(self.filePath, self.savePath, "dg")
-            flag = temp.justreadDatAS()
-            if not flag:
-                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
-                return
-            # temp.biaoding_show()
-            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
-
-        # QMessageBox.information(MainWindow, "提示框","标定成功")
-        self.biaoding_angle_edit.setText("{:.2f}".format(temp.iHorizontalAngle))
-        self.biaoding_height_edit.setText(str(temp.iHorizontalHeight))
-        self.biaoding_max_l_edit.setText(str(temp.max_l))
-        self.biaoding_min_l_edit.setText(str(temp.min_l))
-        self.biaoding_max_h_edit.setText(str(temp.max_h))
-        self.biaoding_min_h_edit.setText(str(temp.min_h))
 
     def shoudong_biaoding(self):
-        if self.filePath == "":
-            QtWidgets.QMessageBox.information(self, "提示框", "请先选择文件！")
-            return
-        if self.biaoding_angle_edit.text() == '':
-            QtWidgets.QMessageBox.information(self, "提示框", "请先自动标定！")
-            return
-        self.up2down = self.switchUp2Down.isChecked()
-
-        self.savePath = self.filePath[:-4].replace("data_file", "bin_file") + ".bin"
-        self.savePath_editline.setText(self.savePath)
-        temp = Biaoding(self.filePath, self.savePath, self.brand_selection.currentText())
-        temp.iHorizontalAngle = float(self.biaoding_angle_edit.text())
-        temp.iHorizontalHeight = int(self.biaoding_height_edit.text())
-        temp.max_l = int(self.biaoding_max_l_edit.text())
-        temp.min_l = int(self.biaoding_min_l_edit.text())
-        temp.max_h = int(self.biaoding_max_h_edit.text())
-        temp.min_h = int(self.biaoding_min_h_edit.text())
-        self.mayavi_widget1.clearAll()
-
-        if self.brand_selection.currentText() == "杜格":
-            flag = temp.readDatDG2(up2down=self.up2down)
-            if not flag:
-                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+        try:
+            if self.filePath == "":
+                QtWidgets.QMessageBox.information(self, "提示框", "请先选择文件！")
                 return
-        elif self.brand_selection.currentText() == "傲视":
-            flag = temp.justreadDatAS2()
-            if not flag:
-                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+            if self.biaoding_angle_edit.text() == '':
+                QtWidgets.QMessageBox.information(self, "提示框", "请先自动标定！")
                 return
-        # temp.biaoding_show()
-        temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+            self.up2down = self.switchUp2Down.isChecked()
+
+            self.savePath = self.filePath[:-4].replace("data_file", "bin_file") + ".bin"
+            self.savePath_editline.setText(self.savePath)
+            temp = Biaoding(self.filePath, self.savePath, self.brand_selection.currentText())
+            temp.iHorizontalAngle = float(self.biaoding_angle_edit.text())
+            temp.iHorizontalHeight = int(self.biaoding_height_edit.text())
+            temp.max_l = int(self.biaoding_max_l_edit.text())
+            temp.min_l = int(self.biaoding_min_l_edit.text())
+            temp.max_h = int(self.biaoding_max_h_edit.text())
+            temp.min_h = int(self.biaoding_min_h_edit.text())
+            self.mayavi_widget1.clearAll()
+
+            if self.brand_selection.currentText() == "杜格":
+                flag = temp.readDatDG2(up2down=self.up2down)
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+            elif self.brand_selection.currentText() == "傲视":
+                flag = temp.justreadDatAS2()
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+            # temp.biaoding_show()
+            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+        except Exception as e:
+            QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+            return
 
     def result_show(self):
         if self.refuge_island_height.text() == '':
@@ -258,7 +266,11 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         temp.isle_l = int(self.refuge_island_width.text())
         temp.isle_h = int(self.refuge_island_height.text())
         self.mayavi_widget1.clearAll()
-        temp.final_integrate_show(fig = self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+        try:
+            temp.final_integrate_show(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+        except Exception as e:
+            QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+            return
 
 
 if __name__ == '__main__':

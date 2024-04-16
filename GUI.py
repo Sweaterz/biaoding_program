@@ -173,7 +173,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "标定工具 v_1.03"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "标定工具 v_1.05"))
         self.pushButton.setText(_translate("MainWindow", "自动标定"))
 
         self.label.setText(_translate("MainWindow", "filePath:"))

@@ -31,6 +31,8 @@ def read_pcd(fullname):
 
 def read_bin(path):
     pointcloud = np.fromfile(path, dtype=np.float32).reshape(-1, 4)
+    if pointcloud.size == 0:
+        return [], [], [], []
     x = pointcloud[:, 0]
     y = pointcloud[:, 1]
     z = pointcloud[:, 2]

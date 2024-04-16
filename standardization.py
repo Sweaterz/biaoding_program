@@ -1,5 +1,6 @@
 import math
 
+
 # 标定数据
 
 # 以下内容是标定工作
@@ -11,14 +12,15 @@ import math
 # min_h = 0.0                       #扫描范围最低处 单位mm   理想状态下为0
 # max_h = 4000                      #扫描范围最高处 单位mm   默认最大高度为4m
 
-#输入一帧数据以及雷达扫描步距角
-#输出角度、高度、最小l值、最大l值
-def standardization_dg(use_data, lidarAngleStep, up2down = False):
-    iHorizontalAngle = get_iHorizontalAngle_dg(use_data, lidarAngleStep, up2down)
-    iHorizontalHeight = get_iHorizontalHeight_dg(use_data, lidarAngleStep, iHorizontalAngle, up2down)
-    min_l = get_min_l_dg(use_data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up2down)
-    max_l = get_max_l_dg(use_data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_l, up2down)
+# 输入一帧数据以及雷达扫描步距角
+# 输出角度、高度、最小l值、最大l值
+def standardization_dg(use_data, lidarAngleStep, up2down=False):
+    iHorizontalAngle = get_iHorizontalAngle_test(use_data, lidarAngleStep, up2down)
+    iHorizontalHeight = get_iHorizontalHeight_test(use_data, lidarAngleStep, iHorizontalAngle, up2down)
+    min_l = get_min_l_test(use_data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up2down)
+    max_l = get_max_l_test(use_data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_l, up2down)
     return iHorizontalAngle, iHorizontalHeight, min_l, max_l
+
 
 def get_iHorizontalAngle_dg(data, lidarAngleStep, up2down):
     size = len(data)
@@ -27,13 +29,12 @@ def get_iHorizontalAngle_dg(data, lidarAngleStep, up2down):
         MSB = data[i * 2 + 1]
         LSB = data[i * 2]
         distance = int(MSB, 16) * 256 + int(LSB, 16)
-        if distance < 100:
+        if distance < 2060 or distance > 3640:
             continue
         angle0 = i * lidarAngleStep
         h = int(math.sin(math.radians(angle0)) * distance)
         l = int(math.cos(math.fabs(angle0) * math.pi / 180) * distance)
-        if distance > 5000:
-            continue
+
         my_data.append([l, h])
         if i == int(size / 2) - 100:
             break
@@ -52,18 +53,20 @@ def get_iHorizontalAngle_dg(data, lidarAngleStep, up2down):
             if l1 != l2:
                 tan = math.atan((h1 - h2) / (l1 - l2)) / math.pi * 180
                 my_tans.append(tan)
-    my_tans_area = [[],[],[],[]]
+    # my_tans_area = [[],[],[],[]]
+    my_tans_area = [[], [], []]
     for tan in my_tans:
-        if tan < 30:
+        if 30 < tan < 50:
             my_tans_area[0].append(tan)
-        elif tan < 60:
+        elif 50 < tan < 70:
             my_tans_area[1].append(tan)
-        elif tan < 90:
+        elif 70 < tan < 90:
             my_tans_area[2].append(tan)
-        else:
-            my_tans_area[3].append(tan)
-    max_area = max(len(my_tans_area[0]), len(my_tans_area[1]), len(my_tans_area[2]), len(my_tans_area[3]))
-    for i in range(4):
+        # else:
+        # my_tans_area[3].append(tan)
+    # max_area = max(len(my_tans_area[0]), len(my_tans_area[1]), len(my_tans_area[2]), len(my_tans_area[3]))
+    max_area = max(len(my_tans_area[0]), len(my_tans_area[1]), len(my_tans_area[2]))
+    for i in range(3):
         if len(my_tans_area[i]) == max_area:
             my_tans = my_tans_area[i]
     # my_tans = [my_tan for my_tan in my_tans if math.fabs(my_tans[25] - my_tan) <= 10]
@@ -71,6 +74,48 @@ def get_iHorizontalAngle_dg(data, lidarAngleStep, up2down):
         average_tan = sum(my_tans) / len(my_tans)
         print("Final tan is %.2f" % average_tan)
         return average_tan
+
+
+def get_iHorizontalAngle_test(data, lidarAngleStep, up2down = False):
+    size = len(data)
+    my_data = []
+    for i in range(int(size / 2)):
+        MSB = data[i * 2 + 1]
+        LSB = data[i * 2]
+        distance = int(MSB, 16) * 256 + int(LSB, 16)
+        if distance < 2060 or distance > 3640:
+            continue
+        angle0 = i * lidarAngleStep
+        h = int(math.sin(math.radians(angle0)) * distance)
+        l = int(math.cos(math.fabs(angle0) * math.pi / 180) * distance)
+
+        my_data.append([l, h])
+
+    # 测量水平地面的角度
+    my_tans = []
+    countNum = len(my_data) // 2
+    for i in range(countNum):
+        l1 = my_data[i][0]
+        l2 = my_data[i + countNum][0]
+        h1 = my_data[i][1]
+        h2 = my_data[i + countNum][1]
+        if l1 != l2:
+            theta = math.atan((h1 - h2) / (l1 - l2)) / math.pi * 180
+            my_tans.append(theta)
+    if len(my_tans) != 0:
+        average = sum(my_tans) / len(my_tans)
+        print(my_tans)
+    # 最大值和最小值之差应该满足小于0.5度
+    while max(my_tans) - min(my_tans) > 0.5:
+        diff = [math.fabs(tan - average) for tan in my_tans]
+        m = max(diff)
+        index = diff.index(m)
+        value = my_tans[index]
+        my_tans.remove(value)
+        average = sum(my_tans) / len(my_tans)
+
+    return average
+
 
 def get_iHorizontalHeight_dg(data, lidarAngleStep, iHorizontalAngle, up2down):
     size = len(data)
@@ -106,6 +151,47 @@ def get_iHorizontalHeight_dg(data, lidarAngleStep, iHorizontalAngle, up2down):
     min_h = -min_h
     print("Final height is", min_h - 38)
     return min_h - 38
+
+
+def get_iHorizontalHeight_test(data, lidarAngleStep, iHorizontalAngle, up2down):
+    size = len(data)
+    usedData = []
+    if up2down:
+        coefficient = -1
+    else:
+        coefficient = 1
+    for i in range(int(size / 2)):
+        angle0 = i * lidarAngleStep
+        MSB = data[i * 2 + 1]
+        LSB = data[i * 2]
+        distance = int(MSB, 16) * 256 + int(LSB, 16)
+        if distance < 2060 or distance > 3640:
+            continue
+        if angle0 < iHorizontalAngle:
+            angle = iHorizontalAngle - angle0
+            h = - int(math.sin(math.radians(angle)) * distance) * coefficient
+            l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+        elif angle0 > iHorizontalAngle:
+            angle = angle0 - iHorizontalAngle
+            h = + int(math.sin(math.radians(angle)) * distance) * coefficient
+            l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+        else:
+            h = 0
+            l = distance
+        usedData.append(h)
+
+    average = sum(usedData) / len(usedData)
+    while max(usedData) - min(usedData) > 0.5:
+        diff = [math.fabs(data - average) for data in usedData]
+        m = max(diff)
+        index = diff.index(m)
+        value = usedData[index]
+        usedData.remove(value)
+        average = sum(usedData) / len(usedData)
+
+    print("Final height is", -max(usedData) - 50)
+    return -max(usedData) - 50
+
 
 def get_min_l_dg(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up2down):
     size = len(data)
@@ -143,6 +229,48 @@ def get_min_l_dg(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up2d
     print("Final minl is", l)
     return l
 
+
+def get_min_l_test(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up2down):
+    size = len(data)
+    my_data = []
+    if up2down:
+        coefficient = -1
+    else:
+        coefficient = 1
+    for i in range(int(size / 2)):
+        MSB = data[i * 2 + 1]
+        LSB = data[i * 2]
+        distance = int(MSB, 16) * 256 + int(LSB, 16)
+        if distance < 0 or distance > 2500:
+            continue
+        angle0 = i * lidarAngleStep
+        if angle0 < iHorizontalAngle:
+            angle = iHorizontalAngle - angle0
+            h = iHorizontalHeight - int(math.sin(math.radians(angle)) * distance) * coefficient
+            l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+        elif angle0 > iHorizontalAngle:
+            angle = angle0 - iHorizontalAngle
+            h = iHorizontalHeight + int(math.sin(math.radians(angle)) * distance) * coefficient
+            l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+        else:
+            h = iHorizontalHeight
+            l = distance
+        my_data.append([l, h])
+
+    if up2down:
+        my_data.reverse()
+    for l, h in my_data:
+        if h < 0 and 500 < l < 2000:
+            break
+
+    print("Final minl is", l)
+    return l
+
+
+def get_max_l_test(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_l, up2down):
+    return min_l + 3000
+
+
 def get_max_l_dg(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_l, up2down):
     size = len(data)
     my_data = []
@@ -175,8 +303,11 @@ def get_max_l_dg(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_
     for l, h in my_data:
         if l > min_l and h > 100:
             break
+    if l - 20 < min_l + 1500:
+        return min_l + 1500
     print("Final maxl is", l)
     return l - 20
+
 
 def standardization_as(use_data, lidarAngleStep):
     iHorizontalAngle = get_iHorizontalAngle_as(use_data, lidarAngleStep)
@@ -184,6 +315,7 @@ def standardization_as(use_data, lidarAngleStep):
     min_l = get_min_l_as(use_data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight)
     max_l = get_max_l_as(use_data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_l)
     return iHorizontalAngle, iHorizontalHeight, min_l, max_l
+
 
 def get_iHorizontalAngle_as(data, lidarAngleStep):
     size = len(data)
@@ -206,29 +338,6 @@ def get_iHorizontalAngle_as(data, lidarAngleStep):
         l = int(math.cos(math.fabs(angle0) * math.pi / 180) * distance)
         if 2500 > distance > 1900:
             my_data.append([l, h])
-    # 测量水平地面的角度
-    # my_tans = []
-    # if len(my_tans) <= 25:
-    #     return 0
-    # for i, coordinate in enumerate(my_data):
-    #     l = coordinate[0]
-    #     h = coordinate[1]
-    #     if i > 25:
-    #         l1 = my_data[i - 25][0]
-    #         h1 = my_data[i - 25][1]
-    #         l2 = l
-    #         h2 = h
-    #         if l1 != l2 and l < 5000:
-    #             tan = math.atan((h1 - h2) / (l1 - l2)) / math.pi * 180
-    #             my_tans.append(tan)
-    # if my_data[0][0] > my_data[-1][0]:
-    #     my_tans = [my_tan for my_tan in my_tans if math.fabs(my_tans[-25] - my_tan) <= 10]
-    # else:
-    #     my_tans = [my_tan for my_tan in my_tans if math.fabs(my_tans[25] - my_tan) <= 10]
-    # if my_tans != []:
-    #     average_tan = sum(my_tans) / len(my_tans)
-    #     print("Final tan is %.2f" % average_tan)
-    #     return average_tan
 
     # 测量水平地面的角度
     my_tans = []
@@ -262,6 +371,7 @@ def get_iHorizontalAngle_as(data, lidarAngleStep):
         average_tan = sum(my_tans) / len(my_tans)
         print("Final tan is %.2f" % average_tan)
         return average_tan
+
 
 def get_iHorizontalHeight_as(data, lidarAngleStep, iHorizontalAngle):
     size = len(data)
@@ -300,6 +410,7 @@ def get_iHorizontalHeight_as(data, lidarAngleStep, iHorizontalAngle):
     min_h = -min(my_data)
     print("Final height is", min_h - 30)
     return min_h - 30
+
 
 def get_min_l_as(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight):
     size = len(data)
@@ -347,6 +458,7 @@ def get_min_l_as(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight):
     print("Final minl is", min_l)
     return min_l
 
+
 def get_max_l_as(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_l):
     size = len(data)
     my_data = []
@@ -376,7 +488,7 @@ def get_max_l_as(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_
             l = distance
         if 2000 < l < 5000:
             my_data.append([l, h])
-    if my_data == []:
+    if not my_data:
         print("Maxl error, please replace other file", min_l)
         return min_l
     max_l = min_l
