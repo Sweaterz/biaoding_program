@@ -60,10 +60,12 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console=False,
+          noconsole=True,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
-          entitlements_file=None , icon='ico.ico')
+          entitlements_file=None,
+          icon='ico.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
