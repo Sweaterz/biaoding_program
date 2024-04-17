@@ -5,12 +5,12 @@ import numpy as np
 
 from mayavi import mlab
 
-from standardization import standardization_dg, standardization_as
+from standardization import standardization_dg, standardization_as, standardization_dg_270mini
 from show_only_for_biaoding import read_bin, read_pcd, read_txt
 
 
 class Biaoding():
-    def __init__(self, filePath, savePath, brand="as"):
+    def __init__(self, filePath, savePath, brand="dg"):
         self.filePath = filePath
         self.savePath = savePath
         self.iHorizontalAngle = 0  # 84.53
@@ -40,7 +40,7 @@ class Biaoding():
                 line_data = line.split(" ")
                 if line_data[0] != 'FC':
                     continue
-                if line_data[4]=='9D' and line_data[5]=='03':
+                if line_data[4] == '9D' and line_data[5] == '03':
                     if len(line_data) < 925:
                         print('this scan data is not enough, discard it!')
                         continue
@@ -54,6 +54,21 @@ class Biaoding():
                 use_data.append(line_data[49: 2 * num_points + 49])
         return use_data
 
+    def chooseDataDG_270mini(self):
+        use_data = []
+        with open(self.filePath, 'r') as fopen:
+            lines = fopen.readlines()
+        oneIdxData = ""
+        for line in lines:
+            lineSplit = line.split(" ")
+            if lineSplit[2] == "00" and lineSplit[3] == "00":
+                if oneIdxData:
+                    use_data.append(oneIdxData)
+                    oneIdxData = ""
+
+            oneIdxData += line
+        return use_data
+
     # 用于读取广武杜格雷达点云数据，.dat格式, 仅根据是否有点判断是否为车辆,杜格从下开始扫描
     def readDatDG(self, up2down):
         use_data = self.chooseDataDG()
@@ -63,7 +78,8 @@ class Biaoding():
             return self.all_data
         # 标定开始
         self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization_dg(use_data[50],
-                                                                             self.lidarAngleStep, up2down)
+                                                                                                   self.lidarAngleStep,
+                                                                                                   up2down)
         if up2down:
             coefficient = -1
         else:
@@ -83,11 +99,11 @@ class Biaoding():
                 if angle0 < self.iHorizontalAngle:
                     angle = self.iHorizontalAngle - angle0
                     h = self.iHorizontalHeight - int(math.sin(math.radians(angle)) * distance) * coefficient
-                    l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                    l = int(math.cos(angle * math.pi / 180) * distance)
                 elif angle0 > self.iHorizontalAngle:
                     angle = angle0 - self.iHorizontalAngle
                     h = self.iHorizontalHeight + int(math.sin(math.radians(angle)) * distance) * coefficient
-                    l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                    l = int(math.cos(angle * math.pi / 180) * distance)
                 else:
                     h = self.iHorizontalHeight
                     l = distance
@@ -112,7 +128,67 @@ class Biaoding():
             binpc.tofile(self.savePath)
         return self.all_data
 
-    def readDatDG2(self, up2down = False):
+    def readDatDG_270mini(self, up2down):
+        use_data = self.chooseDataDG_270mini()
+
+        if len(use_data) < 30:
+            print("this data is not right! please check it! filePath is %s" % self.filePath)
+            return self.all_data
+        # 标定开始
+        self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization_dg_270mini(use_data[50],
+                                                                                                           self.lidarAngleStep,
+                                                                                                           up2down)
+        if up2down:
+            coefficient = -1
+        else:
+            coefficient = 1
+        # 标定结束
+
+        for idx, data in enumerate(use_data):
+            loops = data.split("\n")
+            if loops[-1] == "":
+                loops = loops[:-1]
+            for loop in loops:
+                hex_data = loop.split(" ")
+                for i in range(12):
+                    startIdx = i * 100
+                    if hex_data[startIdx] != "FF" or hex_data[startIdx + 1] != "EE":
+                        continue
+                    startAngle = (int(hex_data[startIdx + 3], 16) * 256 + int(hex_data[startIdx + 2], 16)) / 100
+                    for j in range(startIdx + 4, startIdx + 100, 6):
+                        distance = int(hex_data[j + 1], 16) * 256 + int(hex_data[j], 16)
+                        id = (j - startIdx - 4 + 6) / 6
+                        pointIdx = startIdx * 16 + id
+                        angle0 = startAngle + self.lidarAngleStep * id - 105
+                        if distance < 0 or distance > 2500:
+                            continue
+                        if angle0 < self.iHorizontalAngle:
+                            angle = self.iHorizontalAngle - angle0
+                            h = self.iHorizontalHeight - int(math.sin(math.radians(angle)) * distance) * coefficient
+                            l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                        elif angle0 > self.iHorizontalAngle:
+                            angle = angle0 - self.iHorizontalAngle
+                            h = self.iHorizontalHeight + int(math.sin(math.radians(angle)) * distance) * coefficient
+                            l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                        else:
+                            h = self.iHorizontalHeight
+                            l = distance
+                        if l < 6000:
+                            self.all_data.append([idx, l / 20.0, h / 20.0, 150])
+            self.end_idx = idx
+
+        print("read format: the file:%s, start_idx:%d, end_idx:%d" % (self.filePath, self.start_idx, self.end_idx))
+        if self.savePath is not "":
+            savedir = "/".join(self.savePath.split('/')[:-1])
+            if not os.path.exists(savedir):  # 如果路径不存在
+                os.makedirs(savedir)
+            binpc = np.array(self.all_data)
+            binpc = binpc.reshape(-1, 4).astype(np.float32)
+            binpc.tofile(self.savePath)
+        return self.all_data
+
+    # 手动标定
+    def readDatDG2(self, up2down=False):
         use_data = self.chooseDataDG()
         if len(use_data) < 30:
             print("this data is not right! please check it! filePath is %s" % self.filePath)
@@ -168,7 +244,67 @@ class Biaoding():
             binpc.tofile(self.savePath)
         return self.all_data
 
-    def final_show(self, format="bin", up2down = False):
+    # 手动标定270mini
+    def readDatDG2_270mini(self, up2down):
+        use_data = self.chooseDataDG_270mini()
+
+        if len(use_data) < 30:
+            print("this data is not right! please check it! filePath is %s" % self.filePath)
+            return self.all_data
+        # 标定开始
+        # self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization_dg_270mini(use_data[50],
+        #                                                                                                    self.lidarAngleStep,
+        #                                                                                                    up2down)
+        if up2down:
+            coefficient = -1
+        else:
+            coefficient = 1
+        # 标定结束
+
+        for idx, data in enumerate(use_data):
+            loops = data.split("\n")
+            if loops[-1] == "":
+                loops = loops[:-1]
+            for loop in loops:
+                hex_data = loop.split(" ")
+                for i in range(12):
+                    startIdx = i * 100
+                    if hex_data[startIdx] != "FF" or hex_data[startIdx + 1] != "EE":
+                        continue
+                    startAngle = (int(hex_data[startIdx + 3], 16) * 256 + int(hex_data[startIdx + 2], 16)) / 100
+                    for j in range(startIdx + 4, startIdx + 100, 6):
+                        distance = int(hex_data[j + 1], 16) * 256 + int(hex_data[j], 16)
+                        id = (j - startIdx - 4 + 6) / 6
+                        pointIdx = startIdx * 16 + id
+                        angle0 = startAngle + self.lidarAngleStep * id - 105
+                        # if distance < 0 or distance > 2500:
+                        #     continue
+                        if angle0 < self.iHorizontalAngle:
+                            angle = self.iHorizontalAngle - angle0
+                            h = self.iHorizontalHeight - int(math.sin(math.radians(angle)) * distance) * coefficient
+                            l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                        elif angle0 > self.iHorizontalAngle:
+                            angle = angle0 - self.iHorizontalAngle
+                            h = self.iHorizontalHeight + int(math.sin(math.radians(angle)) * distance) * coefficient
+                            l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                        else:
+                            h = self.iHorizontalHeight
+                            l = distance
+                        if l < 6000:
+                            self.all_data.append([idx, l / 20.0, h / 20.0, 150])
+            self.end_idx = idx
+
+        print("read format: the file:%s, start_idx:%d, end_idx:%d" % (self.filePath, self.start_idx, self.end_idx))
+        if self.savePath is not "":
+            savedir = "/".join(self.savePath.split('/')[:-1])
+            if not os.path.exists(savedir):  # 如果路径不存在
+                os.makedirs(savedir)
+            binpc = np.array(self.all_data)
+            binpc = binpc.reshape(-1, 4).astype(np.float32)
+            binpc.tofile(self.savePath)
+        return self.all_data
+
+    def final_show(self, format="bin", up2down=False):
         final_data = []
         if self.brand == "dg" or self.brand == "杜格":
             use_data = self.chooseDataDG()
@@ -280,7 +416,8 @@ class Biaoding():
         else:
             div_num = 1
 
-        parameter = [[40, 82, 1300, 1050], [166, 210, 1300, 1050], [220, 262, 1300, 1050], [500, 544, 1200, 1050], [552, 590, 1190, 1050], [595, 635, 1190, 1050]]
+        parameter = [[40, 82, 1300, 1050], [166, 210, 1300, 1050], [220, 262, 1300, 1050], [500, 544, 1200, 1050],
+                     [552, 590, 1190, 1050], [595, 635, 1190, 1050]]
 
         for i in range(6):
             mlab.plot3d(
@@ -314,7 +451,6 @@ class Biaoding():
                 tube_radius=None,
 
             )
-
 
     def biaoding_show(self, format="bin"):
         x = None
@@ -413,13 +549,13 @@ class Biaoding():
             exit(0)
         if str(type(x)) != "<class 'list'>":
             ll = mlab.points3d(x, y, z,
-                              col,  # Values used for Color
-                              mode="point",
-                              # 灰度图的伪彩映射
-                              colormap='spectral',  # 'bone', 'copper', 'gnuplot', 'spectral'
-                              # color=(0, 1, 0),   # Used a fixed (r,g,b) instead
-                              figure=fig,
-                              )
+                               col,  # Values used for Color
+                               mode="point",
+                               # 灰度图的伪彩映射
+                               colormap='spectral',  # 'bone', 'copper', 'gnuplot', 'spectral'
+                               # color=(0, 1, 0),   # Used a fixed (r,g,b) instead
+                               figure=fig,
+                               )
         else:
             ll = mlab.plot3d([5000], [5000], [5000])
         # 绘制原点
@@ -478,7 +614,7 @@ class Biaoding():
         ll.mlab_source.reset(x=x, y=y, z=z, col=col)
         # mlab.show(func=None, stop=False)
 
-    def final_integrate_show(self, format="bin", up2down = False, fig = None):
+    def final_integrate_show(self, format="bin", up2down=False, fig=None):
         final_data = []
         if self.brand == "dg" or self.brand == "杜格":
             use_data = self.chooseDataDG()
@@ -721,7 +857,8 @@ class Biaoding():
             print('data error')
             return
         # 标定开始
-        self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization_as(use_data[0], self.lidarAngleStep)
+        self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization_as(use_data[0],
+                                                                                                   self.lidarAngleStep)
         # 标定结束
         for idx, data in enumerate(use_data):
             scan_data = []
@@ -773,7 +910,6 @@ class Biaoding():
             binpc = binpc.reshape(-1, 4).astype(np.float32)
             binpc.tofile(self.savePath)
         return self.all_data
-
 
     # 这个函数用来最终效果展示
     def justreadDatAS2(self):
@@ -837,6 +973,3 @@ if __name__ == '__main__':
     a.min_l = 1000
     a.max_l = 4240
     a.final_show()
-
-
-
