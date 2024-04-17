@@ -60,7 +60,7 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             self.zidong_biaoding_270mini()
             return
         else:
-            self.shoudong_biaoding()
+            self.shoudong_biaoding_270mini()
             return
 
     def select_file(self):
