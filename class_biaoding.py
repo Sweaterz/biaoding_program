@@ -160,8 +160,8 @@ class Biaoding():
                         id = (j - startIdx - 4 + 6) / 6
                         pointIdx = startIdx * 16 + id
                         angle0 = startAngle + self.lidarAngleStep * id - 105
-                        if distance < 0 or distance > 2500:
-                            continue
+                        # if distance < 0 or distance > 2500:
+                        #     continue
                         if angle0 < self.iHorizontalAngle:
                             angle = self.iHorizontalAngle - angle0
                             h = self.iHorizontalHeight - int(math.sin(math.radians(angle)) * distance) * coefficient
