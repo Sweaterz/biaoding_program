@@ -62,7 +62,11 @@ class Biaoding():
             print("this data is not right! please check it! filePath is %s" % self.filePath)
             return self.all_data
         # 标定开始
+<<<<<<< HEAD
         self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization_dg(use_data[50],
+=======
+        self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization_dg(use_data[10],
+>>>>>>> origin/main
                                                                              self.lidarAngleStep, up2down)
         if up2down:
             coefficient = -1
@@ -91,10 +95,17 @@ class Biaoding():
                 else:
                     h = self.iHorizontalHeight
                     l = distance
+<<<<<<< HEAD
                 # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
                 #     if self.start_idx == 0:
                 #         self.start_idx = idx
                 self.end_idx = idx
+=======
+                if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                    if self.start_idx == 0:
+                        self.start_idx = idx
+                    self.end_idx = idx
+>>>>>>> origin/main
                 # if idx > 150:
                 #     all_data.append([idx, l / 20.0, h / 20.0, 150])  # all_data.append([idx, h, l, 150, i])
                 # if self.min_l < l < self.max_l:
@@ -150,10 +161,17 @@ class Biaoding():
                 else:
                     h = self.iHorizontalHeight
                     l = distance
+<<<<<<< HEAD
                 # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
                 #     if self.start_idx == 0:
                 #         self.start_idx = idx
                 self.end_idx = idx
+=======
+                if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                    if self.start_idx == 0:
+                        self.start_idx = idx
+                    self.end_idx = idx
+>>>>>>> origin/main
                 # if idx > 150:
                 #     all_data.append([idx, l / 20.0, h / 20.0, 150])  # all_data.append([idx, h, l, 150, i])
                 if l < 6000:
@@ -207,10 +225,17 @@ class Biaoding():
                     else:
                         h = self.iHorizontalHeight
                         l = distance
+<<<<<<< HEAD
                     # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
                     #     if self.start_idx == 0:
                     #         self.start_idx = idx
                     self.end_idx = idx
+=======
+                    if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                        if self.start_idx == 0:
+                            self.start_idx = idx
+                        self.end_idx = idx
+>>>>>>> origin/main
                     # if idx > 150:
                     #     all_data.append([idx, l / 20.0, h / 20.0, 150])  # all_data.append([idx, h, l, 150, i])
                     if self.isle_l > l and self.isle_h > h:
@@ -256,10 +281,17 @@ class Biaoding():
                     else:
                         h = self.iHorizontalHeight
                         l = distance
+<<<<<<< HEAD
                     # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
                     #     if self.start_idx == 0:
                     #         self.start_idx = idx
                     self.end_idx = idx
+=======
+                    if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                        if self.start_idx == 0:
+                            self.start_idx = idx
+                        self.end_idx = idx
+>>>>>>> origin/main
                     if self.min_l < l < self.max_l and self.min_h < h < self.max_h:
                         final_data.append([idx, l / 10, h / 10, 150])
                     else:
@@ -411,6 +443,7 @@ class Biaoding():
         else:
             print("the format setting doesn't right!")
             exit(0)
+<<<<<<< HEAD
         if str(type(x)) != "<class 'list'>":
             ll = mlab.points3d(x, y, z,
                               col,  # Values used for Color
@@ -422,6 +455,17 @@ class Biaoding():
                               )
         else:
             ll = mlab.plot3d([5000], [5000], [5000])
+=======
+
+        l = mlab.points3d(x, y, z,
+                          col,  # Values used for Color
+                          mode="point",
+                          # 灰度图的伪彩映射
+                          colormap='spectral',  # 'bone', 'copper', 'gnuplot', 'spectral'
+                          # color=(0, 1, 0),   # Used a fixed (r,g,b) instead
+                          figure=fig,
+                          )
+>>>>>>> origin/main
         # 绘制原点
         mlab.points3d(0, 0, 0, color=(1, 1, 1), mode="sphere", scale_factor=0.2, figure=fig)
         # 绘制坐标
@@ -429,7 +473,10 @@ class Biaoding():
             [[1000.0, 0.0, 0.0, 0.0], [0.0, 500, 0.0, 0.0], [0.0, 0.0, 300, 0.0]],
             dtype=np.float64,
         )
+<<<<<<< HEAD
         # 绘制黄色辅助线
+=======
+>>>>>>> origin/main
         self.plot_biaoding_area()
         # self.plot_wheel_area()
         if self.brand == "dg" or self.brand == "杜格":
@@ -475,7 +522,11 @@ class Biaoding():
             tube_radius=None,
             figure=fig,
         )
+<<<<<<< HEAD
         ll.mlab_source.reset(x=x, y=y, z=z, col=col)
+=======
+        l.mlab_source.reset(x=x, y=y, z=z, col=col)
+>>>>>>> origin/main
         # mlab.show(func=None, stop=False)
 
     def final_integrate_show(self, format="bin", up2down = False, fig = None):
@@ -517,10 +568,17 @@ class Biaoding():
                     else:
                         h = self.iHorizontalHeight
                         l = distance
+<<<<<<< HEAD
                     # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
                     #     if self.start_idx == 0:
                     #         self.start_idx = idx
                     self.end_idx = idx
+=======
+                    if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                        if self.start_idx == 0:
+                            self.start_idx = idx
+                        self.end_idx = idx
+>>>>>>> origin/main
                     # if idx > 150:
                     #     all_data.append([idx, l / 20.0, h / 20.0, 150])  # all_data.append([idx, h, l, 150, i])
                     if self.isle_l > l and self.isle_h > h:
@@ -566,10 +624,17 @@ class Biaoding():
                     else:
                         h = self.iHorizontalHeight
                         l = distance
+<<<<<<< HEAD
                     # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
                     #     if self.start_idx == 0:
                     #         self.start_idx = idx
                     self.end_idx = idx
+=======
+                    if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                        if self.start_idx == 0:
+                            self.start_idx = idx
+                        self.end_idx = idx
+>>>>>>> origin/main
                     if self.min_l < l < self.max_l and self.min_h < h < self.max_h:
                         final_data.append([idx, l / 10, h / 10, 150])
                     else:
@@ -755,10 +820,17 @@ class Biaoding():
                 else:
                     h = self.iHorizontalHeight
                     l = distance
+<<<<<<< HEAD
                 # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
                 #     if self.start_idx == 0:
                 #         self.start_idx = idx
                 self.end_idx = idx
+=======
+                if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                    if self.start_idx == 0:
+                        self.start_idx = idx
+                    self.end_idx = idx
+>>>>>>> origin/main
                 if l < 6000:
                     self.all_data.append(
                         [idx, l / 10.0, h / 10.0, 150])  # all_data.append([idx, h, l, 150, i, distance])
@@ -810,10 +882,17 @@ class Biaoding():
                 else:
                     h = self.iHorizontalHeight
                     l = distance
+<<<<<<< HEAD
                 # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
                 #     if self.start_idx == 0:
                 #         self.start_idx = idx
                 self.end_idx = idx
+=======
+                if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                    if self.start_idx == 0:
+                        self.start_idx = idx
+                    self.end_idx = idx
+>>>>>>> origin/main
                 if l < 6000:
                     self.all_data.append(
                         [idx, l / 10.0, h / 10.0, 150])  # all_data.append([idx, h, l, 150, i, distance])
