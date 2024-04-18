@@ -259,9 +259,18 @@ def get_min_l_test(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up
 
     if up2down:
         my_data.reverse()
-    for l, h in my_data:
-        if h < 0 and 500 < l < 2000:
-            break
+    for idx, one_my_data in enumerate(my_data):
+        l = one_my_data[0]
+        h = one_my_data[1]
+        if h < -20 and 500 < l < 2000:
+            for i in range(idx+1, idx+41):
+                if my_data[i][1] > 0:
+                    flag = False
+                    break
+                if i == idx+40:
+                    flag = True
+            if flag:
+                break
 
     print("Final minl is", l)
     return l
