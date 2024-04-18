@@ -113,7 +113,6 @@ def get_iHorizontalAngle_test(data, lidarAngleStep, up2down = False):
             my_tans.append(theta)
     if len(my_tans) != 0:
         average = sum(my_tans) / len(my_tans)
-        print(my_tans)
     # 最大值和最小值之差应该满足小于0.5度
     while max(my_tans) - min(my_tans) > 0.5:
         diff = [math.fabs(tan - average) for tan in my_tans]
@@ -122,6 +121,7 @@ def get_iHorizontalAngle_test(data, lidarAngleStep, up2down = False):
         value = my_tans[index]
         my_tans.remove(value)
         average = sum(my_tans) / len(my_tans)
+    print(f"Final angle is {average}°")
 
     return average
 
