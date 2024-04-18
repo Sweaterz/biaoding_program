@@ -717,6 +717,111 @@ class Biaoding():
         self.integrate_show(fig)
         return final_data
 
+    def final_integrate_show_270mini(self, format="bin", up2down=False, fig=None):
+        final_data = []
+        if self.brand == "dg" or self.brand == "杜格":
+            use_data = self.chooseDataDG_270mini()
+            if len(use_data) < 30:
+                print("this data is not right! please check it! filePath is %s" % self.filePath)
+                return self.all_data
+            # 手动标定不需要这一步
+            # self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization(use_data[0],                                                                                self.lidarAngleStep)
+            # 标定结束
+
+            if up2down:
+                coefficient = -1
+            else:
+                coefficient = 1
+
+            for idx, data in enumerate(use_data):
+                loops = data.split("\n")
+                if loops[-1] == "":
+                    loops = loops[:-1]
+                for loop in loops:
+                    hex_data = loop.split(" ")
+                    for i in range(12):
+                        startIdx = i * 100
+                        if hex_data[startIdx] != "FF" or hex_data[startIdx + 1] != "EE":
+                            continue
+                        startAngle = (int(hex_data[startIdx + 3], 16) * 256 + int(hex_data[startIdx + 2], 16)) / 100
+                        for j in range(startIdx + 4, startIdx + 100, 6):
+                            distance = int(hex_data[j + 1], 16) * 256 + int(hex_data[j], 16)
+                            id = (j - startIdx - 4 + 6) / 6
+                            pointIdx = startIdx * 16 + id
+                            angle0 = startAngle + self.lidarAngleStep * id - 105
+                            # if distance < 0 or distance > 2500:
+                            #     continue
+                            if angle0 < self.iHorizontalAngle:
+                                angle = self.iHorizontalAngle - angle0
+                                h = self.iHorizontalHeight - int(math.sin(math.radians(angle)) * distance) * coefficient
+                                l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                            elif angle0 > self.iHorizontalAngle:
+                                angle = angle0 - self.iHorizontalAngle
+                                h = self.iHorizontalHeight + int(math.sin(math.radians(angle)) * distance) * coefficient
+                                l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                            else:
+                                h = self.iHorizontalHeight
+                                l = distance
+                            if self.isle_l > l and self.isle_h > h:
+                                continue
+                            if self.min_l < l < self.max_l and self.min_h < h < self.max_h:
+                                final_data.append([idx, l / 20, h / 20, 150])
+                            else:
+                                continue
+                self.end_idx = idx
+            if self.savePath is not "":
+                binpc = np.array(final_data)
+                binpc = binpc.reshape(-1, 4).astype(np.float32)
+                binpc.tofile(self.savePath)
+
+        elif self.brand == "as" or self.brand == "傲视":
+            use_data = self.chooseDataAS()
+            # 手动标定不需要下面的代码
+            # iHorizontalAngle, iHorizontalHeight, min_l, max_l = standardization_as(use_data[0], lidarAngleStep)
+            for idx, data in enumerate(use_data):
+                scan_data = []
+                size = len(data)
+                assert size % 6 == 0, 'the data is not a multiple of 6, please check it, size:%d!' % size
+                for i in range(int(size / 6)):
+                    D1 = data[i * 6]
+                    D2 = data[i * 6 + 1]
+                    D3 = data[i * 6 + 2]
+                    D4 = data[i * 6 + 3]
+                    i1 = data[i * 6 + 4]
+                    i2 = data[i * 6 + 5]
+                    distance = int(D1, 16) * 256 * 256 * 256 + int(D2, 16) * 256 * 256 + int(D3, 16) * 256 + int(D4, 16)
+                    distance = int(distance / 10.0)
+                    if distance < 100:
+                        continue
+                    angle0 = i * self.lidarAngleStep
+                    # h = int(math.sin(math.radians(angle0)) * distance) + iHorizontalHeight
+                    # l = int(math.cos(math.fabs(angle0) * math.pi / 180) * distance)
+                    if angle0 < self.iHorizontalAngle:
+                        angle = self.iHorizontalAngle - angle0
+                        h = self.iHorizontalHeight + int(math.sin(math.radians(angle)) * distance)
+                        l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                    elif angle0 > self.iHorizontalAngle:
+                        angle = angle0 - self.iHorizontalAngle
+                        h = self.iHorizontalHeight - int(math.sin(math.radians(angle)) * distance)
+                        l = int(math.cos(math.fabs(angle) * math.pi / 180) * distance)
+                    else:
+                        h = self.iHorizontalHeight
+                        l = distance
+                    # if 300 < l < 6000 and 5000 > h > 0:  # if l > 300 and l < 4000 and  h < 5000 and h > 0:
+                    #     if self.start_idx == 0:
+                    #         self.start_idx = idx
+                    self.end_idx = idx
+                    if self.min_l < l < self.max_l and self.min_h < h < self.max_h:
+                        final_data.append([idx, l / 10, h / 10, 150])
+                    else:
+                        continue
+            if self.savePath is not "":
+                binpc = np.array(final_data)
+                binpc = binpc.reshape(-1, 4).astype(np.float32)
+                binpc.tofile(self.savePath)
+        self.integrate_show(fig)
+        return final_data
+
     def plot_biaoding_area(self):
         # max_l轴
         if self.brand == "dg" or self.brand == "杜格":

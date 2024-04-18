@@ -32,7 +32,7 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         # self.pre_button.clicked.connect(self.pre_file)
         self.save_button.clicked.connect(self.save_biaoding_info)
         self.shoudong_button.clicked.connect(self.shoudong_biaoding_270mini)
-        self.result_show_button.clicked.connect(self.result_show)
+        self.result_show_button.clicked.connect(self.result_show_270mini)
         self.file_list.itemSelectionChanged.connect(self.select_file)
         self.file_list.doubleClicked.connect(self.quick_show)
         self.action_4.triggered.connect(self.help_info)
@@ -333,6 +333,7 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         except Exception as e:
             QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
             return
+
     def result_show(self):
         if self.refuge_island_height.text() == '':
             self.refuge_island_height.setText('0')
@@ -350,6 +351,28 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.mayavi_widget1.clearAll()
         try:
             temp.final_integrate_show(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+        except Exception as e:
+            QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+            return
+
+    def result_show_270mini(self):
+        if self.refuge_island_height.text() == '':
+            self.refuge_island_height.setText('0')
+        if self.refuge_island_width.text() == '':
+            self.refuge_island_width.setText('0')
+        temp = Biaoding(self.filePath, self.savePath, self.brand_selection.currentText())
+        temp.iHorizontalAngle = float(self.biaoding_angle_edit.text())
+        temp.iHorizontalHeight = int(self.biaoding_height_edit.text())
+        temp.max_l = int(self.biaoding_max_l_edit.text())
+        temp.min_l = int(self.biaoding_min_l_edit.text())
+        temp.max_h = int(self.biaoding_max_h_edit.text())
+        temp.min_h = int(self.biaoding_min_h_edit.text())
+        temp.isle_l = int(self.refuge_island_width.text())
+        temp.isle_h = int(self.refuge_island_height.text())
+        temp.lidarAngleStep = 0.25
+        self.mayavi_widget1.clearAll()
+        try:
+            temp.final_integrate_show_270mini(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
         except Exception as e:
             QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
             return
