@@ -24,6 +24,7 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.biaoding_data = ""
         self.filePath = ""
         self.savePath = ""
+        self.startAngle_edit.setText("105")
         self.up2down = self.switchUp2Down.isChecked()
         self.pushButton.clicked.connect(self.zidong_biaoding_270mini)
         self.action.triggered.connect(self.open_new_file)
@@ -38,6 +39,8 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.action_4.triggered.connect(self.help_info)
         self.action_3.triggered.connect(self.about)
         # self.brand_selection.currentIndexChanged.connect(self.brand_change)
+        self.initBrandTraits()    # 根据型号显示对应部件
+        self.brand_selection.currentIndexChanged.connect(self.initBrandTraits)
 
     def about(self):
         QtWidgets.QMessageBox.information(self, "提示框",
@@ -219,19 +222,25 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, "提示框", "请先选择文件！")
             return
         self.up2down = self.switchUp2Down.isChecked()
-
         self.filePath = self.filePath_editline.text()
         self.savePath = self.filePath[:-4].replace("data_file", "bin_file") + ".bin"
         self.savePath_editline.setText(self.savePath)
         self.mayavi_widget1.clearAll()
 
-        if self.brand_selection.currentText() == "杜格":
-            temp = Biaoding(self.filePath, self.savePath, "dg")
+        if self.brand_selection.currentText() == "杜格270mini":
+            temp = Biaoding(self.filePath, self.savePath, "dg_270mini")
+            temp.startAngle = float(self.startAngle_edit.text())
             flag = temp.readDatDG_270mini(up2down=self.up2down)
             if not flag:
                 QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
                 return
-            # temp.biaoding_show()
+            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+        elif self.brand_selection.currentText() == "杜格3000":
+            temp = Biaoding(self.filePath, self.savePath, "dg_3000")
+            flag = temp.readDatDG(up2down=self.up2down)
+            if not flag:
+                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                return
             temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
         elif self.brand_selection.currentText() == "傲视":
             temp = Biaoding(self.filePath, self.savePath, "as")
@@ -239,12 +248,11 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             if not flag:
                 QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
                 return
-            # temp.biaoding_show()
             temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
-
         else:
-            temp = Biaoding(self.filePath, self.savePath, "dg")
-            flag = temp.justreadDatAS()
+            temp = Biaoding(self.filePath, self.savePath, "dg_270mini")
+            temp.startAngle = float(self.startAngle_edit.text())
+            flag = temp.readDatDG_270mini()
             if not flag:
                 QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
                 return
@@ -305,7 +313,6 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.information(self, "提示框", "请先自动标定！")
                 return
             self.up2down = self.switchUp2Down.isChecked()
-
             self.savePath = self.filePath[:-4].replace("data_file", "bin_file") + ".bin"
             self.savePath_editline.setText(self.savePath)
             temp = Biaoding(self.filePath, self.savePath, self.brand_selection.currentText())
@@ -318,17 +325,31 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             temp.lidarAngleStep = 0.25
             self.mayavi_widget1.clearAll()
 
-            if self.brand_selection.currentText() == "杜格":
+            if self.brand_selection.currentText() == "杜格270mini":
+                temp.startAngle = float(self.startAngle_edit.text())
+                temp.brand = "dg_270mini"
                 flag = temp.readDatDG2_270mini(up2down=self.up2down)
                 if not flag:
                     QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
                     return
+            elif self.brand_selection.currentText() == "杜格3000":
+                temp.brand = "dg_3000"
+                flag = temp.readDatDG2(up2down=self.up2down)
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
             elif self.brand_selection.currentText() == "傲视":
+                temp.brand = "as"
                 flag = temp.justreadDatAS2()
                 if not flag:
                     QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
                     return
-            # temp.biaoding_show()
+            else:
+                temp.startAngle = float(self.startAngle_edit.text())
+                flag = temp.readDatDG2_270mini(up2down=self.up2down)
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
             temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
         except Exception as e:
             QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
@@ -371,11 +392,32 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         temp.isle_h = int(self.refuge_island_height.text())
         temp.lidarAngleStep = 0.25
         self.mayavi_widget1.clearAll()
-        try:
-            temp.final_integrate_show_270mini(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
-        except Exception as e:
-            QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
-            return
+        if self.brand_selection.currentText() == "杜格270mini":
+            try:
+                temp.final_integrate_show_270mini(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+            except Exception as e:
+                QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+                return
+        elif self.brand_selection.currentText() == "杜格3000":
+            try:
+                temp.final_integrate_show(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+            except Exception as e:
+                QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+                return
+        else:
+            try:
+                temp.final_integrate_show_270mini(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+            except Exception as e:
+                QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+                return
+
+    def initBrandTraits(self):
+        if self.brand_selection.currentText() == "杜格270mini":
+            self.startAngle_edit.setEnabled(True)
+            self.startAngle_edit.setText("105")
+
+        else:
+            self.startAngle_edit.setEnabled(False)
 
 
 if __name__ == '__main__':

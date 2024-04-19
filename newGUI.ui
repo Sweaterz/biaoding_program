@@ -144,7 +144,7 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_13">
        <item>
-        <widget class="QWidget" name="widget" native="true"/>
+        <widget class="MayaviQWidget" name="mayavi_widget1" native="true"/>
        </item>
       </layout>
      </widget>
@@ -526,9 +526,9 @@
       <property name="title">
        <string>操作面板</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,1,1,1,1">
+      <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,1,1,1,1,1">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1">
          <item>
           <widget class="QLabel" name="label_12">
            <property name="sizePolicy">
@@ -538,22 +538,9 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>品牌：</string>
+            <string>品牌型号：</string>
            </property>
           </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
          </item>
          <item>
           <widget class="QComboBox" name="brand_selection">
@@ -565,19 +552,38 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>60</width>
+             <width>85</width>
              <height>35</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>80</width>
+             <width>120</width>
              <height>50</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToContents</enum>
+           </property>
            <item>
             <property name="text">
-             <string>杜格</string>
+             <string>杜格270mini</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>杜格3000</string>
             </property>
            </item>
            <item>
@@ -627,6 +633,61 @@
            </property>
            <property name="text">
             <string>从上到下</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="minimumSize">
+            <size>
+             <width>75</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>起始角度：</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="startAngle_edit">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>75</horstretch>
+             <verstretch>25</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>75</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="frame">
+            <bool>true</bool>
+           </property>
+           <property name="clearButtonEnabled">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -757,6 +818,14 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MayaviQWidget</class>
+   <extends>QWidget</extends>
+   <header>mayaviQWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

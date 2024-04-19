@@ -14,7 +14,7 @@ class Biaoding():
         self.filePath = filePath
         self.savePath = savePath
         self.iHorizontalAngle = 0  # 84.53
-        if brand == "dg":
+        if brand == "dg_270mini" or brand == "dg_3000":
             self.lidarAngleStep = 0.25
         elif brand == "as":
             self.lidarAngleStep = 0.25
@@ -29,6 +29,7 @@ class Biaoding():
         self.isle_h = 0
         self.brand = brand  # 品牌  "dg"  or   "as"
         self.all_data = []
+        self.startAngleDiff = 105 # 对于杜格270mini标定需要的参数 其他型号不需要
         # self.readDatDG()
         # self.biaoding_show()
 
@@ -159,7 +160,7 @@ class Biaoding():
                         distance = int(hex_data[j + 1], 16) * 256 + int(hex_data[j], 16)
                         id = (j - startIdx - 4 + 6) / 6
                         pointIdx = startIdx * 16 + id
-                        angle0 = startAngle + self.lidarAngleStep * id - 105
+                        angle0 = startAngle + self.lidarAngleStep * id - self.startAngleDiff
                         # if distance < 0 or distance > 2500:
                         #     continue
                         if angle0 < self.iHorizontalAngle:
@@ -276,7 +277,7 @@ class Biaoding():
                         distance = int(hex_data[j + 1], 16) * 256 + int(hex_data[j], 16)
                         id = (j - startIdx - 4 + 6) / 6
                         pointIdx = startIdx * 16 + id
-                        angle0 = startAngle + self.lidarAngleStep * id - 105
+                        angle0 = startAngle + self.lidarAngleStep * id - self.startAngleDiff
                         # if distance < 0 or distance > 2500:
                         #     continue
                         if angle0 < self.iHorizontalAngle:
@@ -306,7 +307,7 @@ class Biaoding():
 
     def final_show(self, format="bin", up2down=False):
         final_data = []
-        if self.brand == "dg" or self.brand == "杜格":
+        if self.brand == "dg_270mini" or self.brand == "杜格270mini" or self.brand == "dg_3000":
             use_data = self.chooseDataDG()
             if len(use_data) < 30:
                 print("this data is not right! please check it! filePath is %s" % self.filePath)
@@ -409,7 +410,7 @@ class Biaoding():
 
     def plot_wheel_area(self):
         # max_l轴
-        if self.brand == "dg":
+        if self.brand == "dg_270mini" or self.brand == "dg_3000":
             div_num = 20
         elif self.brand == "as":
             div_num = 10
@@ -487,7 +488,7 @@ class Biaoding():
         )
         self.plot_biaoding_area()
         # self.plot_wheel_area()
-        if self.brand == "dg" or self.brand == "杜格":
+        if self.brand == "dg_270mini" or self.brand == "杜格" or self.brand == "dg_3000":
             div_num = 20
         elif self.brand == "as" or self.brand == "傲视":
             div_num = 10
@@ -568,7 +569,7 @@ class Biaoding():
         # 绘制黄色辅助线
         self.plot_biaoding_area()
         # self.plot_wheel_area()
-        if self.brand == "dg" or self.brand == "杜格":
+        if self.brand == "dg_270mini" or self.brand == "杜格" or self.brand == "dg_3000":
             div_num = 20
         elif self.brand == "as" or self.brand == "傲视":
             div_num = 10
@@ -616,7 +617,7 @@ class Biaoding():
 
     def final_integrate_show(self, format="bin", up2down=False, fig=None):
         final_data = []
-        if self.brand == "dg" or self.brand == "杜格":
+        if self.brand == "dg_270mini" or self.brand == "杜格" or self.brand == "dg_3000":
             use_data = self.chooseDataDG()
             if len(use_data) < 30:
                 print("this data is not right! please check it! filePath is %s" % self.filePath)
@@ -719,7 +720,7 @@ class Biaoding():
 
     def final_integrate_show_270mini(self, format="bin", up2down=False, fig=None):
         final_data = []
-        if self.brand == "dg" or self.brand == "杜格":
+        if self.brand == "dg_270mini" or self.brand == "杜格" or self.brand == "dg_3000":
             use_data = self.chooseDataDG_270mini()
             if len(use_data) < 30:
                 print("this data is not right! please check it! filePath is %s" % self.filePath)
@@ -748,7 +749,7 @@ class Biaoding():
                             distance = int(hex_data[j + 1], 16) * 256 + int(hex_data[j], 16)
                             id = (j - startIdx - 4 + 6) / 6
                             pointIdx = startIdx * 16 + id
-                            angle0 = startAngle + self.lidarAngleStep * id - 105
+                            angle0 = startAngle + self.lidarAngleStep * id - self.startAngleDiff
                             # if distance < 0 or distance > 2500:
                             #     continue
                             if angle0 < self.iHorizontalAngle:
@@ -824,12 +825,12 @@ class Biaoding():
 
     def plot_biaoding_area(self):
         # max_l轴
-        if self.brand == "dg" or self.brand == "杜格":
+        if self.brand == "dg_270mini" or self.brand == "杜格" or self.brand == "dg_3000":
             div_num = 20
         elif self.brand == "as" or self.brand == "傲视":
             div_num = 10
         else:
-            div_num = 1
+            div_num = 20
 
         mlab.plot3d(
             [self.start_idx, self.start_idx],

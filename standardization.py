@@ -121,13 +121,13 @@ def get_iHorizontalAngle_test(data, lidarAngleStep, up2down = False):
         value = my_tans[index]
         my_tans.remove(value)
         average = sum(my_tans) / len(my_tans)
-    print(f"Final angle is {average}°")
+    print(f"Final angle is {average:.2f}゜")
 
     return average
 
 
 # 270mini
-def get_iHorizontalAngle_test_270mini(data, lidarAngleStep, up2down = False):
+def get_iHorizontalAngle_test_270mini(data, lidarAngleStep, up2down = False, startAngleDiff = 105):
     my_data = []
     loops = data.split("\n")
     if loops[-1] == "":
@@ -151,7 +151,7 @@ def get_iHorizontalAngle_test_270mini(data, lidarAngleStep, up2down = False):
                     continue
                 idx = (j - startIdx - 4 + 6) / 6
                 pointIdx = startIdx * 16 + idx
-                angle = startAngle + lidarAngleStep * idx - 105
+                angle = startAngle + lidarAngleStep * idx - startAngleDiff
                 h = int(math.sin(math.radians(angle)) * distance)
                 l = int(math.cos(angle * math.pi / 180) * distance)
                 my_data.append([l, h])
@@ -169,8 +169,10 @@ def get_iHorizontalAngle_test_270mini(data, lidarAngleStep, up2down = False):
             my_tans.append(theta)
     if len(my_tans) != 0:
         average = sum(my_tans) / len(my_tans)
-        print(my_tans)
+        # print(my_tans)
     # 最大值和最小值之差应该满足小于0.5度
+    else:
+        return
     while max(my_tans) - min(my_tans) > 0.5:
         diff = [math.fabs(tan - average) for tan in my_tans]
         m = max(diff)
@@ -178,7 +180,7 @@ def get_iHorizontalAngle_test_270mini(data, lidarAngleStep, up2down = False):
         value = my_tans[index]
         my_tans.remove(value)
         average = sum(my_tans) / len(my_tans)
-
+    print(f"Final angle is {average:.2f}゜")
     return average
 
 
@@ -258,7 +260,7 @@ def get_iHorizontalHeight_test(data, lidarAngleStep, iHorizontalAngle, up2down):
     return -max(usedData) - 50
 
 
-def get_iHorizontalHeight_test_270mini(data, lidarAngleStep, iHorizontalAngle, up2down):
+def get_iHorizontalHeight_test_270mini(data, lidarAngleStep, iHorizontalAngle, up2down, startAngleDiff = 105):
     size = len(data)
     usedData = []
     if up2down:
@@ -284,7 +286,7 @@ def get_iHorizontalHeight_test_270mini(data, lidarAngleStep, iHorizontalAngle, u
                 distance = int(hex_data[j + 1], 16) * 256 + int(hex_data[j], 16)
                 idx = (j - startIdx - 4 + 6) / 6
                 pointIdx = startIdx * 16 + idx
-                angle0 = startAngle + lidarAngleStep * idx - 105
+                angle0 = startAngle + lidarAngleStep * idx - startAngleDiff
                 if distance < 2060 or distance > 3640:
                     continue
                 if angle0 < iHorizontalAngle:
@@ -388,7 +390,7 @@ def get_min_l_test(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up
     return l
 
 
-def get_min_l_test_270mini(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up2down):
+def get_min_l_test_270mini(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up2down, startAngleDiff = 105):
     size = len(data)
     my_data = []
     if up2down:
@@ -415,7 +417,7 @@ def get_min_l_test_270mini(data, lidarAngleStep, iHorizontalAngle, iHorizontalHe
                 distance = int(hex_data[j + 1], 16) * 256 + int(hex_data[j], 16)
                 idx = (j - startIdx - 4 + 6) / 6
                 pointIdx = startIdx * 16 + idx
-                angle0 = startAngle + lidarAngleStep * idx - 105
+                angle0 = startAngle + lidarAngleStep * idx - startAngleDiff
                 if distance < 0 or distance > 2500:
                     continue
                 if angle0 < iHorizontalAngle:
