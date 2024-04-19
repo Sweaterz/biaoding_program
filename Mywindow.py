@@ -103,11 +103,8 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.savePath_editline.setText(self.savePath)
 
     def save_biaoding_info(self):
-        dir_name = "data/biaoding_file"
         biaoding_savePath = self.filePath.replace(self.filePath.split('/')[-1], "") + self.filePath_editline.text().split('/')[-1][:-4] + ".txt"
 
-        # if not os.path.isdir(dir_name):
-        #     os.makedirs(dir_name)
         self.biaoding_data = "Angle:{}\nHeight:{}\nMax_l:{}\nMin_l:{}\nMax_h:{}\nMin_h:{}\nIsle_h{}\nIsle_l:{}" \
             .format(self.biaoding_angle_edit.text(), self.biaoding_height_edit.text(),
                     self.biaoding_max_l_edit.text(), self.biaoding_min_l_edit.text(),
