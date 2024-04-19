@@ -1,7 +1,7 @@
 # BiaodingProgram  ---- Calibration Program
 ## version-1.05 Support Multi-brand
 
-Support multiple Lidar 270mini、3000 of Duge.
+Support multiple Lidar 270mini、3000 of Duge.  
 支持杜格270mini、杜格3000的多雷达。
 
 ## Introduction
