@@ -5,7 +5,8 @@ Support multiple Lidar 270mini、3000 of Duge.
 支持杜格270mini、杜格3000的多雷达。
 
 ## Introduction
-This repository contains the project used for vertical lidar calibration.  You can get the calibration datas easily through the GUI window of the application.
+This repository contains the project used for vertical lidar calibration.  You can get the calibration datas easily through the GUI window of the application.  
+By the way, the word "Biaoding" means "calibration" in Chinese pingyin.
 ### Content
 * python program .py files
 * .ui file (which is used to design the GUI)
@@ -54,5 +55,5 @@ You can find it on the branch 270mini.
 Thank to Sweaterz，for his efforts to build this project.
 
 
-First Edit by Sweaterz, 2023.9.7.17:10 CST.
+First Edit by Sweaterz, 2023.9.7.17:10 UTC+8:00.
 
