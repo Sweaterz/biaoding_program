@@ -37,6 +37,17 @@ The packed program is located in dist directory. You could use it or distribute 
 
 Now the version v1.05 is developing. The main feature of new version is supporting DuGe Lidar 270mini.
 You can find it on the branch 270mini.
+# BiaodingProgram  ---- Calibration Program
+## version-1.05 Support Multi-brand
+
+Support 270mini Lidar Duge.
+支持杜格270mini的设计。
+
+在使用UI to py工具的时候，生成的newGui.py最后一行的代码需要移动到开头
+> from mayaviQWidget import MayaviQWidget  
+
+
+
 
 ## Thanks
 Thank to Sweaterz，for his efforts to build this project.

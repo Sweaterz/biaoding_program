@@ -24,20 +24,23 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         self.biaoding_data = ""
         self.filePath = ""
         self.savePath = ""
+        self.startAngle_edit.setText("105")
         self.up2down = self.switchUp2Down.isChecked()
-        self.pushButton.clicked.connect(self.zidong_biaoding)
+        self.pushButton.clicked.connect(self.zidong_biaoding_270mini)
         self.action.triggered.connect(self.open_new_file)
         self.action_2.triggered.connect(self.open_new_folder)
         # self.next_button.clicked.connect(self.next_file)
         # self.pre_button.clicked.connect(self.pre_file)
         self.save_button.clicked.connect(self.save_biaoding_info)
-        self.shoudong_button.clicked.connect(self.shoudong_biaoding)
-        self.result_show_button.clicked.connect(self.result_show)
+        self.shoudong_button.clicked.connect(self.shoudong_biaoding_270mini)
+        self.result_show_button.clicked.connect(self.result_show_270mini)
         self.file_list.itemSelectionChanged.connect(self.select_file)
         self.file_list.doubleClicked.connect(self.quick_show)
         self.action_4.triggered.connect(self.help_info)
         self.action_3.triggered.connect(self.about)
         # self.brand_selection.currentIndexChanged.connect(self.brand_change)
+        self.initBrandTraits()    # 根据型号显示对应部件
+        self.brand_selection.currentIndexChanged.connect(self.initBrandTraits)
 
     def about(self):
         QtWidgets.QMessageBox.information(self, "提示框",
@@ -57,10 +60,10 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def quick_show(self):
         if self.biaoding_angle_edit.text() == "" and self.biaoding_height_edit.text() == "":
-            self.zidong_biaoding()
+            self.zidong_biaoding_270mini()
             return
         else:
-            self.shoudong_biaoding()
+            self.shoudong_biaoding_270mini()
             return
 
     def select_file(self):
@@ -101,10 +104,10 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def save_biaoding_info(self):
         dir_name = "data/biaoding_file"
-        biaoding_savePath = dir_name + '/' + self.filePath_editline.text().split('/')[-1][:-4] + ".txt"
+        biaoding_savePath = self.filePath.replace(self.filePath.split('/')[-1], "") + self.filePath_editline.text().split('/')[-1][:-4] + ".txt"
 
-        if not os.path.isdir(dir_name):
-            os.makedirs(dir_name)
+        # if not os.path.isdir(dir_name):
+        #     os.makedirs(dir_name)
         self.biaoding_data = "Angle:{}\nHeight:{}\nMax_l:{}\nMin_l:{}\nMax_h:{}\nMin_h:{}\nIsle_h{}\nIsle_l:{}" \
             .format(self.biaoding_angle_edit.text(), self.biaoding_height_edit.text(),
                     self.biaoding_max_l_edit.text(), self.biaoding_min_l_edit.text(),
@@ -138,8 +141,10 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             # self.filePath = self.filePath_editline.text()
 
     def open_new_folder(self):
-
-        self.directory1 = QtWidgets.QFileDialog.getExistingDirectory(self, "选取文件夹", "./data/data_file/")
+        path = "./data/data_file/"
+        if self.filePath !=  "":
+            path = self.filePath
+        self.directory1 = QtWidgets.QFileDialog.getExistingDirectory(self, "选取文件夹", path)
         if self.directory1 == "":
             return
         if self.file_list.count() != 0:
@@ -214,6 +219,56 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
             return
 
+    def zidong_biaoding_270mini(self):
+        if self.filePath == "":
+            QtWidgets.QMessageBox.information(self, "提示框", "请先选择文件！")
+            return
+        self.up2down = self.switchUp2Down.isChecked()
+        self.filePath = self.filePath_editline.text()
+        self.savePath = self.filePath[:-4].replace("data_file", "bin_file") + ".bin"
+        self.savePath_editline.setText(self.savePath)
+        self.mayavi_widget1.clearAll()
+
+        if self.brand_selection.currentText() == "杜格270mini":
+            temp = Biaoding(self.filePath, self.savePath, "dg_270mini")
+            temp.startAngle = float(self.startAngle_edit.text())
+            flag = temp.readDatDG_270mini(up2down=self.up2down)
+            if not flag:
+                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                return
+            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+        elif self.brand_selection.currentText() == "杜格3000":
+            temp = Biaoding(self.filePath, self.savePath, "dg_3000")
+            flag = temp.readDatDG(up2down=self.up2down)
+            if not flag:
+                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                return
+            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+        elif self.brand_selection.currentText() == "傲视":
+            temp = Biaoding(self.filePath, self.savePath, "as")
+            flag = temp.justreadDatAS()
+            if not flag:
+                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                return
+            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+        else:
+            temp = Biaoding(self.filePath, self.savePath, "dg_270mini")
+            temp.startAngle = float(self.startAngle_edit.text())
+            flag = temp.readDatDG_270mini()
+            if not flag:
+                QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                return
+            # temp.biaoding_show()
+            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+
+        # QMessageBox.information(MainWindow, "提示框","标定成功")
+        self.biaoding_angle_edit.setText("{:.2f}".format(temp.iHorizontalAngle))
+        self.biaoding_height_edit.setText(str(temp.iHorizontalHeight))
+        self.biaoding_max_l_edit.setText(str(temp.max_l))
+        self.biaoding_min_l_edit.setText(str(temp.min_l))
+        self.biaoding_max_h_edit.setText(str(temp.max_h))
+        self.biaoding_min_h_edit.setText(str(temp.min_h))
+
     def shoudong_biaoding(self):
         try:
             if self.filePath == "":
@@ -251,6 +306,57 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
             return
 
+    def shoudong_biaoding_270mini(self):
+        try:
+            if self.filePath == "":
+                QtWidgets.QMessageBox.information(self, "提示框", "请先选择文件！")
+                return
+            if self.biaoding_angle_edit.text() == '':
+                QtWidgets.QMessageBox.information(self, "提示框", "请先自动标定！")
+                return
+            self.up2down = self.switchUp2Down.isChecked()
+            self.savePath = self.filePath[:-4].replace("data_file", "bin_file") + ".bin"
+            self.savePath_editline.setText(self.savePath)
+            temp = Biaoding(self.filePath, self.savePath, self.brand_selection.currentText())
+            temp.iHorizontalAngle = float(self.biaoding_angle_edit.text())
+            temp.iHorizontalHeight = int(self.biaoding_height_edit.text())
+            temp.max_l = int(self.biaoding_max_l_edit.text())
+            temp.min_l = int(self.biaoding_min_l_edit.text())
+            temp.max_h = int(self.biaoding_max_h_edit.text())
+            temp.min_h = int(self.biaoding_min_h_edit.text())
+            temp.lidarAngleStep = 0.25
+            self.mayavi_widget1.clearAll()
+
+            if self.brand_selection.currentText() == "杜格270mini":
+                temp.startAngle = float(self.startAngle_edit.text())
+                temp.brand = "dg_270mini"
+                flag = temp.readDatDG2_270mini(up2down=self.up2down)
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+            elif self.brand_selection.currentText() == "杜格3000":
+                temp.brand = "dg_3000"
+                flag = temp.readDatDG2(up2down=self.up2down)
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+            elif self.brand_selection.currentText() == "傲视":
+                temp.brand = "as"
+                flag = temp.justreadDatAS2()
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+            else:
+                temp.startAngle = float(self.startAngle_edit.text())
+                flag = temp.readDatDG2_270mini(up2down=self.up2down)
+                if not flag:
+                    QtWidgets.QMessageBox.information(self, "提示框", "数据错误，请检查品牌是否正确或者更换数据重试。")
+                    return
+            temp.integrate_show(self.mayavi_widget1.visualization.scene.mayavi_scene)
+        except Exception as e:
+            QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+            return
+
     def result_show(self):
         if self.refuge_island_height.text() == '':
             self.refuge_island_height.setText('0')
@@ -271,6 +377,52 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         except Exception as e:
             QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
             return
+
+    def result_show_270mini(self):
+        if self.refuge_island_height.text() == '':
+            self.refuge_island_height.setText('0')
+        if self.refuge_island_width.text() == '':
+            self.refuge_island_width.setText('0')
+        temp = Biaoding(self.filePath, self.savePath, self.brand_selection.currentText())
+        temp.iHorizontalAngle = float(self.biaoding_angle_edit.text())
+        temp.iHorizontalHeight = int(self.biaoding_height_edit.text())
+        temp.max_l = int(self.biaoding_max_l_edit.text())
+        temp.min_l = int(self.biaoding_min_l_edit.text())
+        temp.max_h = int(self.biaoding_max_h_edit.text())
+        temp.min_h = int(self.biaoding_min_h_edit.text())
+        temp.isle_l = int(self.refuge_island_width.text())
+        temp.isle_h = int(self.refuge_island_height.text())
+        temp.lidarAngleStep = 0.25
+        self.mayavi_widget1.clearAll()
+        if self.brand_selection.currentText() == "杜格270mini":
+            temp.brand = "dg_270mini"
+            temp.startAngleDiff = float(self.startAngle_edit.text())
+            try:
+                temp.final_integrate_show_270mini(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+            except Exception as e:
+                QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+                return
+        elif self.brand_selection.currentText() == "杜格3000":
+            temp.brand = "dg_3000"
+            try:
+                temp.final_integrate_show(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+            except Exception as e:
+                QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+                return
+        else:
+            try:
+                temp.final_integrate_show_270mini(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
+            except Exception as e:
+                QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
+                return
+
+    def initBrandTraits(self):
+        if self.brand_selection.currentText() == "杜格270mini":
+            self.startAngle_edit.setEnabled(True)
+            self.startAngle_edit.setText("105")
+
+        else:
+            self.startAngle_edit.setEnabled(False)
 
 
 if __name__ == '__main__':
