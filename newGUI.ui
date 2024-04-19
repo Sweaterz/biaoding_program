@@ -679,7 +679,7 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>75</width>
+             <width>65</width>
              <height>25</height>
             </size>
            </property>
@@ -688,6 +688,13 @@
            </property>
            <property name="clearButtonEnabled">
             <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_14">
+           <property name="text">
+            <string>゜</string>
            </property>
           </widget>
          </item>

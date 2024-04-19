@@ -104,10 +104,10 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def save_biaoding_info(self):
         dir_name = "data/biaoding_file"
-        biaoding_savePath = dir_name + '/' + self.filePath_editline.text().split('/')[-1][:-4] + ".txt"
+        biaoding_savePath = self.filePath.replace(self.filePath.split('/')[-1], "") + self.filePath_editline.text().split('/')[-1][:-4] + ".txt"
 
-        if not os.path.isdir(dir_name):
-            os.makedirs(dir_name)
+        # if not os.path.isdir(dir_name):
+        #     os.makedirs(dir_name)
         self.biaoding_data = "Angle:{}\nHeight:{}\nMax_l:{}\nMin_l:{}\nMax_h:{}\nMin_h:{}\nIsle_h{}\nIsle_l:{}" \
             .format(self.biaoding_angle_edit.text(), self.biaoding_height_edit.text(),
                     self.biaoding_max_l_edit.text(), self.biaoding_min_l_edit.text(),
@@ -141,8 +141,10 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
             # self.filePath = self.filePath_editline.text()
 
     def open_new_folder(self):
-
-        self.directory1 = QtWidgets.QFileDialog.getExistingDirectory(self, "选取文件夹", "./data/data_file/")
+        path = "./data/data_file/"
+        if self.filePath !=  "":
+            path = self.filePath
+        self.directory1 = QtWidgets.QFileDialog.getExistingDirectory(self, "选取文件夹", path)
         if self.directory1 == "":
             return
         if self.file_list.count() != 0:
@@ -393,12 +395,15 @@ class Window(newGUI.Ui_MainWindow, QtWidgets.QMainWindow):
         temp.lidarAngleStep = 0.25
         self.mayavi_widget1.clearAll()
         if self.brand_selection.currentText() == "杜格270mini":
+            temp.brand = "dg_270mini"
+            temp.startAngleDiff = float(self.startAngle_edit.text())
             try:
                 temp.final_integrate_show_270mini(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
             except Exception as e:
                 QtWidgets.QMessageBox.information(self, "错误！", "标定出错,请检查数据或更换数据重试\n" + str(e))
                 return
         elif self.brand_selection.currentText() == "杜格3000":
+            temp.brand = "dg_3000"
             try:
                 temp.final_integrate_show(fig=self.mayavi_widget1.visualization.scene.mayavi_scene, up2down=self.up2down)
             except Exception as e:

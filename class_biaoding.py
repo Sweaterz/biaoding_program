@@ -138,7 +138,8 @@ class Biaoding():
         # 标定开始
         self.iHorizontalAngle, self.iHorizontalHeight, self.min_l, self.max_l = standardization_dg_270mini(use_data[50],
                                                                                                            self.lidarAngleStep,
-                                                                                                           up2down)
+                                                                                                           up2down,
+                                                                                                           self.startAngleDiff)
         if up2down:
             coefficient = -1
         else:

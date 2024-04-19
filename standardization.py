@@ -22,8 +22,8 @@ def standardization_dg(use_data, lidarAngleStep, up2down=False):
     return iHorizontalAngle, iHorizontalHeight, min_l, max_l
 
 
-def standardization_dg_270mini(use_data, lidarAngleStep, up2down=False):
-    iHorizontalAngle = get_iHorizontalAngle_test_270mini(use_data, lidarAngleStep, up2down)
+def standardization_dg_270mini(use_data, lidarAngleStep, up2down=False, startAngleDiff=105):
+    iHorizontalAngle = get_iHorizontalAngle_test_270mini(use_data, lidarAngleStep, up2down, startAngleDiff)
     iHorizontalHeight = get_iHorizontalHeight_test_270mini(use_data, lidarAngleStep, iHorizontalAngle, up2down)
     min_l = get_min_l_test_270mini(use_data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up2down)
     max_l = get_max_l_test_270mini(use_data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, min_l, up2down)
@@ -382,9 +382,18 @@ def get_min_l_test(data, lidarAngleStep, iHorizontalAngle, iHorizontalHeight, up
 
     if up2down:
         my_data.reverse()
-    for l, h in my_data:
-        if h < 0 and 500 < l < 2000:
-            break
+    for idx, one_my_data in enumerate(my_data):
+        l = one_my_data[0]
+        h = one_my_data[1]
+        if h < -20 and 500 < l < 2000:
+            for i in range(idx+1, idx+41):
+                if my_data[i][1] > 0:
+                    flag = False
+                    break
+                if i == idx+40:
+                    flag = True
+            if flag:
+                break
 
     print("Final minl is", l)
     return l
@@ -435,9 +444,18 @@ def get_min_l_test_270mini(data, lidarAngleStep, iHorizontalAngle, iHorizontalHe
 
     if up2down:
         my_data.reverse()
-    for l, h in my_data:
-        if h < 0 and 500 < l < 2000:
-            break
+    for idx, one_my_data in enumerate(my_data):
+        l = one_my_data[0]
+        h = one_my_data[1]
+        if h < -20 and 500 < l < 2000:
+            for i in range(idx+1, idx+41):
+                if my_data[i][1] > 0:
+                    flag = False
+                    break
+                if i == idx+40:
+                    flag = True
+            if flag:
+                break
 
     print("Final minl is", l)
     return l
