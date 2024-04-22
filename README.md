@@ -23,7 +23,7 @@ The ui file can be opened by Qtdesigner , you can design the GUI easily by dragg
 > #This line should move to the begining of file.  
 > from mayaviQWidget import MayaviQWidget
 
-## Require
+## Required
 **python 3.6**  
 **PyQt5**  
 **vtk**    (compatible version for python 3.6)  
